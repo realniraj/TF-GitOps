@@ -16,7 +16,7 @@ provider "azurerm" {
 resource "azurerm_resource_group" "gitops_rg" {
   name     = "GitOps-RG"
   location = "East US"
-  # Add this new block
+
   tags = {
     environment = "production"
     managed-by  = "terraform-gitops"

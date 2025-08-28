@@ -20,6 +20,5 @@ resource "azurerm_resource_group" "gitops_rg" {
   tags = {
     environment = "production"
     managed-by  = "terraform-gitops"
-    demo-by     = "Niraj Kumar"
   }
 }

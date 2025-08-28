@@ -1,45 +1,70 @@
 # .github/workflows/terraform.yaml
 name: 'Terraform GitOps Pipeline'
 
+# This section defines when the workflow will run.
 on:
+  # Trigger on pushes to the 'main' branch. This is for applying changes.
   push:
-    branches:
-    - main # Trigger the workflow on pushes to the main branch
+    branches: [ main ]
+  # Trigger on pull requests targeting the 'main' branch. This is for validation.
   pull_request:
-    # Also trigger on pull requests for validation
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel.
 jobs:
+  # We define a single job called 'terraform'.
   terraform:
     name: 'Terraform'
+    # The type of runner that the job will run on. We use a standard GitHub-hosted runner.
     runs-on: ubuntu-latest
-    env:
-      # This is needed for the backend configuration
-      ARM_ACCESS_KEY: ${{ secrets.AZURE_STORAGE_ACCESS_KEY }}
-
+    
+    # A map of the steps that make up the job.
     steps:
+    # Step 1: Check out the repository's code so the workflow can access it.
     - name: Checkout
       uses: actions/checkout@v3
 
+    # Step 2: Log in to Azure using the Service Principal credentials stored in GitHub secrets.
     - name: Login to Azure
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    # Step 3: Fetch the Terraform backend storage key from Azure Key Vault.
+    # This is more secure than storing the key directly in GitHub secrets.
+    - name: Get Terraform Backend Access Key from Key Vault
+      uses: azure/cli@v2
+      with:
+        azcliversion: latest
+        inlineScript: |
+          # The script runs an Azure CLI command to get the secret and then exports it
+          # as an environment variable (ARM_ACCESS_KEY) for subsequent steps.
+          echo "ARM_ACCESS_KEY=$(az keyvault secret show --vault-name tf-kv-31785 --name tf-backend-key --query value -o tsv)" >> $GITHUB_ENV
+      
+    # Step 4: Set up the Terraform CLI in the runner environment.
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: 1.5.0
 
+    # Step 5: Initialize the Terraform working directory.
+    # This downloads the necessary providers and configures the backend using the ARM_ACCESS_KEY.
     - name: Terraform Init
       run: terraform init
 
+    # Step 6: Check if the Terraform code is correctly formatted.
+    # The '-check' flag will cause the step to fail if formatting is incorrect.
     - name: Terraform Format
       run: terraform fmt -check
 
+    # Step 7: Generate an execution plan.
+    # This shows what changes Terraform will make to the infrastructure.
+    # This step runs for both pushes and pull requests for validation.
     - name: Terraform Plan
       run: terraform plan -input=false
 
-    # This step will only run on pushes to the main branch, not on pull requests
+    # Step 8: Apply the changes to the infrastructure.
+    # This step is conditional and will ONLY run on a push to the 'main' branch.
+    # It will not run on pull requests, preventing accidental applies from feature branches.
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve -input=false

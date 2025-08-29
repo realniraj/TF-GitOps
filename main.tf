@@ -20,5 +20,7 @@ resource "azurerm_resource_group" "gitops_rg" {
   tags = {
     environment = "production"
     managed-by  = "terraform-gitops"
+    cost-center = "devops"
+    project     = "gitops"
   }
 }

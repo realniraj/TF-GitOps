@@ -19,7 +19,7 @@ provider "azurerm" {
 # Defines the resource group where all our resources will live.
 resource "azurerm_resource_group" "gitops_rg" {
   name     = "GitOps-RG"
-  location = "Central US"
+  location = "East US"
 
   tags = {
     environment = "production"
@@ -51,11 +51,4 @@ resource "azurerm_storage_account" "gitops_sa" {
     managed-by  = "terraform-gitops"
     cost-center = "devops"
   }
-
-  # FIX: Add an explicit dependency on the resource group.
-  # This prevents a race condition where the storage account creation
-  # is attempted before the resource group is fully propagated in Azure.
-  depends_on = [
-    azurerm_resource_group.gitops_rg
-  ]
 }

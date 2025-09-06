@@ -19,7 +19,7 @@ provider "azurerm" {
 # Defines the resource group where all our resources will live.
 resource "azurerm_resource_group" "gitops_rg1" {
   name     = "GitOps-RG1"
-  location = "East US"
+  location = "Central US"
 
   tags = {
     environment = "production"

@@ -42,7 +42,7 @@ resource "random_string" "sa_suffix" {
 resource "azurerm_storage_account" "gitops_sa" {
   name                     = "gitopsstorage${random_string.sa_suffix.result}"
   resource_group_name      = azurerm_resource_group.gitops_rg.name
-  location                 = azurerm_resource_group.gitops_rg.location
+  location                 = "Central US"
   account_tier             = "Standard"
   account_replication_type = "LRS"
 

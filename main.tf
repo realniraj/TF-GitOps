@@ -17,7 +17,7 @@ provider "azurerm" {
 
 # --- Resource Group ---
 # Defines the resource group where all our resources will live.
-resource "azurerm_resource_group" "gitops_rg" {
+resource "azurerm_resource_group" "gitops_rg1" {
   name     = "GitOps-RG1"
   location = "East US"
 
@@ -41,8 +41,8 @@ resource "random_string" "sa_suffix" {
 # Creates a standard, locally-redundant storage account inside the resource group.
 resource "azurerm_storage_account" "gitops_sa" {
   name                     = "gitopsstorage${random_string.sa_suffix.result}"
-  resource_group_name      = azurerm_resource_group.gitops_rg.name
-  location                 = "East US"
+  resource_group_name      = azurerm_resource_group.gitops_rg1.name
+  location                 = azurerm_resource_group.gitops_rg1.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 

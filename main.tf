@@ -12,9 +12,16 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  # FIX: Add the features block to control provider behavior.
+  features {
+    resource_group {
+      # This setting tells Terraform to skip its safety check and allow
+      # the deletion of a resource group even if it contains resources
+      # managed by this Terraform configuration.
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
-
 # --- Resource Group ---
 # Defines the resource group where all our resources will live.
 resource "azurerm_resource_group" "gitops_rg1" {
